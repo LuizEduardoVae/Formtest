@@ -1,0 +1,6 @@
+streamlit
+docxtpl
+pandas
+python-docx
+zipfile
+os
