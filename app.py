@@ -607,19 +607,22 @@ elif st.session_state.page == 'solicitacao_diaria':
     caminho_docx_solicitacao = "Docs/solicitacao_de_passagem_e_diaria.docx"
     docx_path_solicitacao = preencher_documento2(dados_solicitacaodiaria_positivo, caminho_docx_solicitacao)
 
-    # Dicionário de Termo de Renúncia
-    dados_termoderenuncia = {
-        'solicitacaodiaria': st.session_state.pedir_diaria_passagem,
-        'nome': st.session_state.nome,
-        'cpf': st.session_state.cpf,
-        'siape': st.session_state.SIAPE,
-        'renuncias': ', '.join(st.session_state.renuncias),
-        'motivodarenuncia': st.session_state.motivodarenuncia  # Adicionado
-    }
-    # Caminho específico para o termo de renúncia
-    caminho_termo_renuncia = "Docs/termoderenuncia.docx"
-    docx_termo_renuncia_path = preencher_documento3(dados_termoderenuncia, caminho_termo_renuncia)
+    # Verificar se deve gerar o Termo de Renúncia
+    if st.session_state.pedir_diaria_passagem == "Não Desejo Diária e Passagem":
+        dados_termoderenuncia = {
+            'solicitacaodiaria': st.session_state.pedir_diaria_passagem,
+            'nome': st.session_state.nome,
+            'cpf': st.session_state.cpf,
+            'siape': st.session_state.SIAPE,
+            'renuncias': ', '.join(st.session_state.renuncias),
+            'motivodarenuncia': st.session_state.motivodarenuncia
+        }
+        caminho_termo_renuncia = "Docs/termoderenuncia.docx"
+        docx_termo_renuncia_path = preencher_documento3(dados_termoderenuncia, caminho_termo_renuncia)
+    else:
+        docx_termo_renuncia_path = None
 
+    # Criar um arquivo ZIP contendo todos os documentos
     zip_path = "documentos.zip"
     with zipfile.ZipFile(zip_path, 'w') as zipf:
         if docx_termo_renuncia_path:
@@ -627,18 +630,11 @@ elif st.session_state.page == 'solicitacao_diaria':
         zipf.write(docx_path_solicitacao)
         zipf.write(docx_path)
 
-
-    st.success("Documentos gerados com sucesso!")
-
     # Download do arquivo ZIP contendo todos os documentos
     with open(zip_path, 'rb') as f:
         if st.download_button('Baixar Todos os Documentos em ZIP', f, file_name='documentos.zip'):
             st.success("Documento gerado com sucesso!")
-            # Limpar o session_state
-            st.session_state.clear()
-            # Opcional: Redirecionar para a página inicial
-            st.experimental_rerun()
-            # Remover os arquivos gerados
+            st.session_state.clear() 
             os.remove(zip_path)
             os.remove(caminho_docx)
             os.remove(caminho_docx_solicitacao)
